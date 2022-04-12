@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
 import DataSource from "../../database/DataSource";
 import { User } from "../models/User";
-import bcrypt from "bcrypt";
 
-const BCRYPT_SALT = process.env.BCRYPT_SALT!;
 const userRepository = DataSource.getRepository(User);
 
 class UserController {
-  async index(request: Request, response: Response) {
+  async index(_request: Request, response: Response) {
     return response.json(await userRepository.find());
   }
 
@@ -18,16 +16,18 @@ class UserController {
 
   async create(request: Request, response: Response) {
     const { username, email, password } = request.body;
+    if (!username || !email || !password) {
+      return response.status(400).json({ error: "Validation fails."})
+    }
+
     if (await userRepository.findOneBy({ email })) {
       return response.json({error: "E-mail already taken"});
     }
 
-    const encryptedPassword = await bcrypt.hash(password, BCRYPT_SALT);
-
     const user = new User();
     user.username = username;
     user.email = email;
-    user.password = encryptedPassword;
+    user.password = password;
 
     return response.json(await userRepository.save(user));
   }
@@ -42,7 +42,11 @@ class UserController {
 
     user.username = username || user.username;
     user.email = email || user.email;
-    user.password = password || user.password;
+    if (password) {
+      await user.hashPassword(password);
+    } else {
+      user.password = user.password
+    }
 
     return response.json(await userRepository.save(user));
   }
@@ -53,7 +57,7 @@ class UserController {
       return response.json({error: "User doesnt exists"});
     }
 
-    return response.json(await userRepository.delete(user));
+    return response.json(await userRepository.delete({ id: user.id }));
   }
 }
 

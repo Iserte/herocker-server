@@ -13,10 +13,8 @@ export default async (request: Request, response: Response, next: NextFunction) 
   const [, token] = authHeader.split(" ");
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    console.log(decoded);
-    // request.userId = decoded.id;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
+    request.userId = decoded.id;
 
     return next();
   } catch (error) {

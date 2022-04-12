@@ -1,19 +1,20 @@
 import { Request, Response, Router } from "express";
-import UserController from "./app/controllers/UserController";
 import authMiddleware from "./app/middlewares/authMiddleware";
+
+import UserController from "./app/controllers/UserController";
+import SessionController from "./app/controllers/SessionController";
 
 const router = Router();
 
 router.get("/users", UserController.index);
-router.get("/users/:id", UserController.show);
 router.post("/users", UserController.create);
-router.put("/users/:id", UserController.update);
-router.delete("/users/:id", UserController.delete);
+
+router.post("/session", SessionController.store)
 
 router.use(authMiddleware);
 
-router.get("/teste", (request: Request, response: Response) => {
-  return response.send(true);
-});
+router.get("/users/:id", UserController.show);
+router.put("/users/:id", UserController.update);
+router.delete("/users/:id", UserController.delete);
 
 export default router;

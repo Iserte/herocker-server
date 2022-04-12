@@ -1,4 +1,5 @@
 import express, { Application } from "express";
+import session from "express-session";
 import cors from "cors";
 
 import router from "./router";
@@ -14,6 +15,10 @@ class Express {
   server: Application;
 
   middlewares() {
+    this.server.use(session({
+      secret: process.env.SESSION_SECRET!,
+      name: process.env.SESSION_NAME
+    }))
     this.server.use(cors());
     this.server.use(express.json());
   }
